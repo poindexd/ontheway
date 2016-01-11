@@ -1,0 +1,30 @@
+doctype html
+html
+	head
+		title On The Way
+		meta(name='description', content='Places you drove past')
+		link(rel='stylesheet', href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css')
+		link(rel='stylesheet', href='main.css')
+	body.grey.lighten-2
+		#header.green.white-text
+			.container
+				img(src='map_icon.png', height=55, width=55)
+				.inline-indent
+					h4 On The Way
+					h6 <i>Places you drove past</i>
+		.full.grey.lighten-4
+			.container
+				.row
+					#main.col.l8.s12
+						#map
+							p Select a trip from the right.
+						#filters-wrapper.white.center
+							#filters.white
+					#trips.col.l4.s12
+		#footer.grey-text
+			.container
+				p Powered by <a href='https://automatic.com'><img src='automatic-logo-header.png'/></a> // Google Places API // Fork on <a href='https://github.com/poindexd/ontheway'>Github</a>
+
+		script(src='https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js')
+		script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyAD9r4vn7eUo4gxZoUfLi_BgCFfD5dkP38&libraries=places,geometry')
+		script(src='main.js')
