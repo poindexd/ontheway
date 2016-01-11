@@ -21,11 +21,4 @@ gulp.task('watch', function() {
   gulp.watch('jade/*.jade', ['templates']);
 });
 
-
-/*
-gulp.task('server', () => {
-	connect.server();
-});
-*/
-
 gulp.task('default', ['templates', 'watch']);

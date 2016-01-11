@@ -64,7 +64,7 @@ function draw_trip(trip, map_element, editable){
 
   map.fitBounds(get_bounds(path));
 
-  var path = new google.maps.Polyline({
+  var polyline = new google.maps.Polyline({
     map: map,
     path: path,
     strokeColor: 'orange'
@@ -85,7 +85,7 @@ function get_bounds(path){
 }
 
 //Query Google places and place markers for the results
-//TODO: Ettor checking
+//TODO: Error checking
 function draw_markers(trip, map){
 
   var path = google.maps.geometry.encoding.decodePath(trip.path);
@@ -97,6 +97,7 @@ function draw_markers(trip, map){
 
   var service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function(results, status) {
+
     if (status != google.maps.places.PlacesServiceStatus.OK)
       return false;
 
@@ -130,7 +131,7 @@ function draw_markers(trip, map){
         markers[types.indexOf(place.types[idx])].push(marker);
 
       });
-      
+
       apply_filters();
   });
 }
@@ -138,13 +139,17 @@ function draw_markers(trip, map){
 //When a trip is clicked, move it to the big pane
 //TODO: cache trips/markers
 $(document).on('click', '.trip', function(){
+
   if ($(this).hasClass('selected'))
     return true;
-  $('#map').html('<div class="preloader-wrapper big active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>')
-  var id = $(this).attr('id').replace(/trip/, '');
 
+  $('#map').html('<div class="preloader-wrapper big active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>')
+  
+  var id = $(this).attr('id').replace(/trip/, '');
   var map = draw_trip(trips[id], $('#map')[0], true);
+
   draw_markers(trips[id], map);
+  
   $(this).siblings().removeClass('selected');
   $(this).addClass('selected');
 })
