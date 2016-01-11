@@ -1,15 +1,24 @@
+/*  ontheway main.js
+ *  initializes maps and grabs places
+ */
+
+//Types of places to grab from Google Places API
 var types = ['bakery', 'bar', 'cafe', 'convenience_store', 'department_store', 'food', 'gas_station', 'grocery_or_supermarket', 'night_club', 'restaurant', 'store', 'shopping_mall'];
 var type_names = ['bakery', 'bar', 'cafe', 'convenience store', 'department store', 'food', 'gas station', 'grocery store', 'night club', 'restaurant', 'store', 'shopping mall'];
 
+//From snazzymaps.com
 var map_style = [{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#46bcec"},{"visibility":"on"}]}];
 
+//Array to hold trips from Automatic user
 var trips = [];
 
+//Initialiaze array tp hold markers
 var markers = new Array(types.length);
 $.each(markers, function(i,v){
   markers[i] = [];
 });
 
+//Authorize with dummy Automatic account
 $.ajax({
   url: "https://api.automatic.com/trip/",
   headers: {
@@ -21,7 +30,7 @@ $.ajax({
   }
 });
 
-
+//Initialize each of the trip maps on the right side
 function process_trips(trips){
   if (trips.length <=0)
     return false;
@@ -36,6 +45,7 @@ function process_trips(trips){
   });
 }
 
+//Draw a trip map onto a dom element, return the map object
 function draw_trip(trip, map_element, editable){
   var path = google.maps.geometry.encoding.decodePath(trip.path);
 
@@ -50,7 +60,6 @@ function draw_trip(trip, map_element, editable){
     mapTypeControl: false,
     scaleControl: false,
     streetViewControl: editable
-
   });
 
   map.fitBounds(get_bounds(path));
@@ -64,6 +73,7 @@ function draw_trip(trip, map_element, editable){
   return map;
 }
 
+//helper to get lat/lng bounds given a path
 function get_bounds(path){
   var bounding_rect = new google.maps.LatLngBounds();
 
@@ -74,6 +84,8 @@ function get_bounds(path){
   return bounding_rect;
 }
 
+//Query Google places and place markers for the results
+//TODO: Ettor checking
 function draw_markers(trip, map){
 
   var path = google.maps.geometry.encoding.decodePath(trip.path);
@@ -85,16 +97,18 @@ function draw_markers(trip, map){
 
   var service = new google.maps.places.PlacesService(map);
   service.nearbySearch(request, function(results, status) {
-    console.log(results);
-    if (status == google.maps.places.PlacesServiceStatus.OK) {
-      for (var i = 0; i < results.length; i++) {
-        var place = results[i];
+    if (status != google.maps.places.PlacesServiceStatus.OK)
+      return false;
+
+      $.each(results, function(i, place){
+
         var image = {
           url: place.icon,
           scaledSize: new google.maps.Size(32,32),
           origin: new google.maps.Point(0, 0),
           anchor: new google.maps.Point(0, 32)
         };
+
         var marker = new google.maps.Marker({
           map: map,
           position: place.geometry.location,
@@ -109,19 +123,20 @@ function draw_markers(trip, map){
           infowindow.open(this.getMap(), this);
         });
 
-        console.log(place.types);
         var idx = 0;
         while((types.indexOf(place.types[idx])==-1) && (idx < place.types.length))
           idx++;
-        console.log(idx);
+
         markers[types.indexOf(place.types[idx])].push(marker);
 
-      }
+      });
+      
       apply_filters();
-    }
   });
 }
 
+//When a trip is clicked, move it to the big pane
+//TODO: cache trips/markers
 $(document).on('click', '.trip', function(){
   if ($(this).hasClass('selected'))
     return true;
@@ -134,17 +149,19 @@ $(document).on('click', '.trip', function(){
   $(this).addClass('selected');
 })
 
+//init filters
 function apply_filters(){
   $('input[type=checkbox]').each(function(){
-    $(this).attr('checked','checked')
-    $(this).trigger('change');
+    $(this).attr('checked','checked').trigger('change');
   });
 }
 
+//init checkboxes
 $.each(types, function(i, v){
   $('#filters').append('<div><input type="checkbox" id="'+v+'" /><label for="'+v+'">'+type_names[i]+'</label><div>');
 });
 
+//Update map when checkbox clicked
 $('input[type=checkbox]').change(function(){
   var id = types.indexOf($(this).attr('id'));
   var checked = $(this).is(":checked");
